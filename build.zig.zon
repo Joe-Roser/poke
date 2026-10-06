@@ -1,0 +1,13 @@
+.{
+    .name = .poke,
+    .version = "0.0.1",
+    .dependencies = .{
+        .goose = .{
+            .url = "../smd/src/frontend/dbus/goose/",
+            .hash = "goose-2.0.0-e9MzMHAgAwCROuNYGRINZprSxtXjeF4y2I_-9jmSh_Vi",
+        },
+    },
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+    .fingerprint = 0xb221d42655b8998c,
+}
