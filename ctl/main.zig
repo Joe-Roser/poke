@@ -14,6 +14,7 @@ const usage_fmt =
     \\  stop - Stop the timers
     \\  quit - Close poke
     \\  inspect - See poke state
+    \\
 ;
 
 const Cmd = enum {
@@ -94,7 +95,7 @@ fn inner_main(stdout: *std.Io.Writer, stderr: *std.Io.Writer, cmd: Cmd, conn: *g
         r.seek = std.mem.alignForward(usize, r.seek, 8);
         const secsLeft = try r.takeInt(i64, reply.header.endianess);
 
-        try stdout.print("state: {s} - timer: {}s", .{ state, secsLeft });
+        try stdout.print("state: {s} - timer: {}s\n", .{ state, secsLeft });
     }
 
     return 0;

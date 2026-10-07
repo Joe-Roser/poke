@@ -18,7 +18,7 @@ const Io = std.Io;
 pub var log_file: Io.File = undefined;
 pub var log_io: Io = undefined;
 
-fn fileLog(
+pub fn fileLog(
     comptime level: std.log.Level,
     comptime scope: @TypeOf(.enum_literal),
     comptime format: []const u8,

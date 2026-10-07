@@ -86,7 +86,7 @@ pub const State = enum {
                 self.* = .work;
                 return .{
                     .timer_op = .fromDuration(WORK_DUR),
-                    .notify = .{ .title = "Start Work", .body = std.fmt.comptimePrint("Starting timer. See you in {} mins", .{WORK_DUR.toSeconds() / 60}) },
+                    .notify = .{ .title = "Start Work", .body = comptime std.fmt.comptimePrint("Starting timer. See you in {} mins", .{@divTrunc(WORK_DUR.toSeconds(), 60)}) },
                 };
             },
             .start_break => {
