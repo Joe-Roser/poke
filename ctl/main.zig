@@ -13,6 +13,7 @@ const usage_fmt =
     \\  ack - Acknoledge a notification
     \\  stop - Stop the timers
     \\  quit - Close poke
+    \\  logs - Print the log file
     \\  inspect - See poke state
     \\
 ;
@@ -24,6 +25,7 @@ const Cmd = enum {
     stop,
     quit,
     inspect,
+    logs,
 
     fn toMethodName(self: Cmd) [:0]const u8 {
         return switch (self) {
@@ -33,6 +35,7 @@ const Cmd = enum {
             .stop => "Stop",
             .quit => "Quit",
             .inspect => "DumpState",
+            .logs => unreachable,
         };
     }
 };
@@ -63,6 +66,30 @@ pub fn main(init: std.process.Init) !void {
         try stderr_w.interface.flush();
         std.process.exit(1);
     };
+
+    if (cmd == .logs) {
+        const arena = init.arena.allocator();
+        defer _ = init.arena.reset(.retain_capacity);
+        const path = blk: {
+            if (init.environ_map.get("XDG_DATA_HOME")) |d| break :blk d;
+            if (init.environ_map.get("HOME")) |d| {
+                break :blk try std.fs.path.join(arena, &.{ d, ".local", "share" });
+            }
+            try stderr_w.interface.print("Error - No log file location. Please set $XDG_DATA_HOME or $HOME", .{});
+            return;
+        };
+        var d = try std.Io.Dir.openDirAbsolute(init.io, path, .{});
+        defer d.close(init.io);
+        var log_file = try d.openFile(init.io, "poke.log", .{});
+        defer log_file.close(init.io);
+        var reader = log_file.reader(init.io, &.{});
+        _ = try reader.interface.streamRemaining(w);
+        // const n = try reader.interface.stream(w, .unlimited);
+
+        try w.flush();
+
+        return;
+    }
 
     var conn = try goose.Connection.init(init.gpa, .Session, init.io, init.environ_map);
 
