@@ -17,6 +17,8 @@ const Io = std.Io;
 
 pub var log_file: Io.File = undefined;
 pub var log_io: Io = undefined;
+var start: Io.Timestamp = undefined;
+pub var w: Io.File.Writer = undefined;
 
 pub fn fileLog(
     comptime level: std.log.Level,
@@ -24,18 +26,24 @@ pub fn fileLog(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    const file = log_file;
     const prefix = "[" ++ comptime level.asText() ++ "] (" ++ @tagName(scope) ++ "): ";
 
     var buf: [1024]u8 = undefined;
-    const msg = std.fmt.bufPrint(&buf, prefix ++ format ++ "\n", args) catch return;
-    var writer = file.writer(log_io, &.{});
-    writer.interface.writeAll(msg) catch {};
+    var buf_writer = Io.Writer.fixed(&buf);
+
+    const since_start = start.untilNow(log_io, .real);
+    since_start.format(&buf_writer) catch return;
+
+    buf_writer.print(prefix ++ format ++ "\n", args) catch return;
+
+    w.interface.writeAll(buf[0..buf_writer.end]) catch return;
 }
 
 pub fn openLogFile(io: Io, alloc: std.mem.Allocator, env: *std.process.Environ.Map) !void {
+    start = .now(io, .real);
     if (builtin.mode == .Debug) {
         log_file = Io.File.stdout();
+        w = log_file.writer(io, &.{});
         return;
     }
     const path = blk: {
@@ -47,4 +55,5 @@ pub fn openLogFile(io: Io, alloc: std.mem.Allocator, env: *std.process.Environ.M
     };
     var d = try Io.Dir.openDirAbsolute(io, path, .{});
     log_file = try d.createFile(io, "poke.log", .{ .truncate = true });
+    w = log_file.writer(io, &.{});
 }

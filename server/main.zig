@@ -18,12 +18,13 @@ pub fn main(init: std.process.Init) !void {
     var io_instance = Io.Threaded.init_single_threaded;
     const io = io_instance.io();
 
+    log.log_io = io;
     log.openLogFile(io, init.arena.allocator(), init.environ_map) catch |e| {
         log.log_file = Io.File.stdout();
+        log.w = log.log_file.writer(io, &.{});
         std.log.err("Error initialising logger: {s}", .{@errorName(e)});
     };
     defer log.log_file.close(io);
-    log.log_io = io;
 
     var epoll = try Epoll.init(.{});
     defer epoll.deinit();
