@@ -104,11 +104,11 @@ pub const State = enum {
                 .none, .work, .@"break" => return .{},
                 .work_ack => {
                     self.* = .@"break";
-                    return .{ .timer_op = .fromDuration(WORK_DUR) };
+                    return .{ .timer_op = .fromDuration(BREAK_DUR) };
                 },
                 .break_ack => {
                     self.* = .work;
-                    return .{ .timer_op = .fromDuration(BREAK_DUR) };
+                    return .{ .timer_op = .fromDuration(WORK_DUR) };
                 },
             },
             .dump_state => unreachable,
